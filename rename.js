@@ -37,6 +37,7 @@
  * [clear]  清理乱名
  * [blpx]   如果用了上面的bl参数,对保留标识后的名称分组排序,如果没用上面的bl参数单独使用blpx则不起任何作用
  * [blockquic] blockquic=on 阻止; blockquic=off 不阻止
+ * [skip=]  指定关键词，包含这些关键词的节点将不进行任何重命名处理，多个关键词用+号连接 例如 [skip=测试+保留+官方]
  */
 
 // const inArg = {'blkey':'iplc+GPT>GPTnewName+NF+IPLC', 'flag':true };
@@ -52,12 +53,14 @@ const nx = inArg.nx || false,
   debug = inArg.debug || false,
   clear = inArg.clear || false,
   addflag = inArg.flag || false,
-  nm = inArg.nm || false;
+  nm = inArg.nm || false,
+  skip = inArg.skip || false;
 
 const FGF = inArg.fgf == undefined ? " " : decodeURI(inArg.fgf),
   XHFGF = inArg.sn == undefined ? " " : decodeURI(inArg.sn),
   FNAME = inArg.name == undefined ? "" : decodeURI(inArg.name),
   BLKEY = inArg.blkey == undefined ? "" : decodeURI(inArg.blkey),
+  SKIP = inArg.skip == undefined ? "" : decodeURI(inArg.skip),
   blockquic = inArg.blockquic == undefined ? "" : decodeURI(inArg.blockquic),
   nameMap = {
     cn: "cn",
@@ -132,10 +135,11 @@ const rurekey = {
   Esnc: /esnc/gi,
 };
 
-let GetK = false, AMK = []
+let GetK = false,
+  AMK = [];
 function ObjKA(i) {
-  GetK = true
-  AMK = Object.entries(i)
+  GetK = true;
+  AMK = Object.entries(i);
 }
 
 function operator(pro) {
@@ -170,33 +174,47 @@ function operator(pro) {
   const BLKEYS = BLKEY ? BLKEY.split("+") : "";
 
   pro.forEach((e) => {
-    let bktf = false, ens = e.name
+    let bktf = false,
+      ens = e.name;
+
+    // 检查是否需要跳过此节点的重命名处理
+    if (SKIP) {
+      const skipKeywords = SKIP.split("+");
+      const shouldSkip = skipKeywords.some(
+        (keyword) => keyword.trim() !== "" && e.name.includes(keyword.trim())
+      );
+      if (shouldSkip) {
+        return; // 跳过此节点，不做任何处理
+      }
+    }
+
     // 预处理 防止预判或遗漏
     Object.keys(rurekey).forEach((ikey) => {
       if (rurekey[ikey].test(e.name)) {
         e.name = e.name.replace(rurekey[ikey], ikey);
-      if (BLKEY) {
-        bktf = true
-        let BLKEY_REPLACE = "",
-        re = false;
-      BLKEYS.forEach((i) => {
-        if (i.includes(">") && ens.includes(i.split(">")[0])) {
-          if (rurekey[ikey].test(i.split(">")[0])) {
-              e.name += " " + i.split(">")[0]
+        if (BLKEY) {
+          bktf = true;
+          let BLKEY_REPLACE = "",
+            re = false;
+          BLKEYS.forEach((i) => {
+            if (i.includes(">") && ens.includes(i.split(">")[0])) {
+              if (rurekey[ikey].test(i.split(">")[0])) {
+                e.name += " " + i.split(">")[0];
+              }
+              if (i.split(">")[1]) {
+                BLKEY_REPLACE = i.split(">")[1];
+                re = true;
+              }
+            } else {
+              if (ens.includes(i)) {
+                e.name += " " + i;
+              }
             }
-          if (i.split(">")[1]) {
-            BLKEY_REPLACE = i.split(">")[1];
-            re = true;
-          }
-        } else {
-          if (ens.includes(i)) {
-             e.name += " " + i
-            }
+            retainKey = re
+              ? BLKEY_REPLACE
+              : BLKEYS.filter((items) => e.name.includes(items));
+          });
         }
-        retainKey = re
-        ? BLKEY_REPLACE
-        : BLKEYS.filter((items) => e.name.includes(items));
-      });}
       }
     });
     if (blockquic == "on") {
@@ -249,12 +267,10 @@ function operator(pro) {
       }
     }
 
-    !GetK && ObjKA(Allmap)
+    !GetK && ObjKA(Allmap);
     // 匹配 Allkey 地区
-    const findKey = AMK.find(([key]) =>
-      e.name.includes(key)
-    )
-    
+    const findKey = AMK.find(([key]) => e.name.includes(key));
+
     let firstName = "",
       nNames = "";
 
