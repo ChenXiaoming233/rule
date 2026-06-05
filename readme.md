@@ -9,26 +9,6 @@
 
 
 
-
----
-
-## rename.js \u53c2\u6570\u53c2\u8003\u624b\u518c
-
-Sub-Store \u811a\u672c\u64cd\u4f5c\u4e2d\u5f15\u7528\u6b64\u811a\u672c\uff0cURL \u4f20\u53c2\u683c\u5f0f\uff1a
-
-\u6b64\u5904\u4e3a\u6d4b\u8bd5\u5185\u5bb9
-
----
-
-## rename.js 参数参考手册
-
-Sub-Store 脚本操作中引用此脚本，URL 传参格式：
-
-\\nhttps://raw.githubusercontent.com/Keywos/rule/main/rename.js#flag&bl=true&blkey=GPT>ChatGPT+NF
-\\n
-- # 后紧跟第一个参数
-- 多个参数用 & 连接
-- 纯开关参数直接写 key，带值的参数用 key=value\n
 ---
 
 ## rename.js 参数参考手册
@@ -79,7 +59,6 @@ https://raw.githubusercontent.com/Keywos/rule/main/rename.js#flag&bl=true&blkey=
 输入: 新加坡 01
 输出: 🇸🇬 新加坡 01
 ```
-
 #### `nm` — 保留未匹配节点
 
 开关参数。默认情况下，无法识别地区的节点会被丢弃。开启后保留原样（或加 `name=` 前缀）。
@@ -91,6 +70,7 @@ https://raw.githubusercontent.com/Keywos/rule/main/rename.js#flag&bl=true&blkey=
 #### `sn` — 区域与序号之间的分隔符
 
 默认空格。例如 `sn=-` → `新加坡-01`
+
 ---
 
 ### 二、机场前缀
@@ -127,13 +107,12 @@ name=搬瓦工 → 搬瓦工 新加坡 01
 节点原始名中包含以下关键词即自动保留：
 
 `直连` `专线` `中转` `家宽` `IPLC` `IEPL` `Pro`
+自动与 `blkey` / `blgd` 去重。
 
 ```
 输入: 新加坡 | 12 | 直连 *0.3
 输出: 新加坡 直连 0.3× 01
 ```
-
-自动与 `blkey` / `blgd` 去重。
 
 #### `blkey` — 自定义保留关键词
 
@@ -143,13 +122,12 @@ name=搬瓦工 → 搬瓦工 新加坡 01
 blkey=GPT+NF+IPLC
 ```
 
-**高级用法 — 重命名**：用 `>` 替换
+*高级用法 — 重命名*：用 `>` 替换。
+将节点名中的 `GPT` 替换为 `ChatGPT`，同时保留 `NF`：
 
 ```
 blkey=GPT>ChatGPT+NF
 ```
-
-将节点名中的 `GPT` 替换为 `ChatGPT`，同时保留 `NF`。
 
 #### `bl` — 正则匹配倍率
 
