@@ -91,6 +91,8 @@ const nameclear =
 const regexArray=[/ˣ²/, /ˣ³/, /ˣ⁴/, /ˣ⁵/, /ˣ⁶/, /ˣ⁷/, /ˣ⁸/, /ˣ⁹/, /ˣ¹⁰/, /ˣ²⁰/, /ˣ³⁰/, /ˣ⁴⁰/, /ˣ⁵⁰/, /IPLC/i, /IEPL/i, /核心/, /边缘/, /高级/, /标准/, /实验/, /商宽/, /家宽/, /游戏|game/i, /购物/, /专线/, /LB/, /cloudflare/i, /\budp\b/i, /\bgpt\b/i,/udpn\b/];
 // prettier-ignore
 const valueArray= [ "2×","3×","4×","5×","6×","7×","8×","9×","10×","20×","30×","40×","50×","IPLC","IEPL","Kern","Edge","Pro","Std","Exp","Biz","Fam","Game","Buy","Zx","LB","CF","UDP","GPT","UDPN"];
+// prettier-ignore
+const BUILTIN_RETAIN = ['直连', '专线', '中转', '家宽', 'IPLC', 'IEPL', 'Pro'];
 const nameblnx = /(高倍|(?!1)2+(x|倍)|ˣ²|ˣ³|ˣ⁴|ˣ⁵|ˣ¹⁰)/i;
 const namenx = /(高倍|(?!1)(0\.|\d)+(x|倍)|ˣ²|ˣ³|ˣ⁴|ˣ⁵|ˣ¹⁰)/i;
 const keya =
@@ -256,7 +258,7 @@ function operator(pro) {
     // 正则 匹配倍率
     if (bl) {
       const match = e.name.match(
-        /((倍率|X|x|×)\D?((\d{1,3}\.)?\d+)\D?)|((\d{1,3}\.)?\d+)(倍|X|x|×)/
+        /((倍率|X|x|×|\*)\D?((\d{1,3}\.)?\d+)\D?)|((\d{1,3}\.)?\d+)(倍|X|x|×)/
       );
       if (match) {
         const rev = match[0].match(/(\d[\d.]*)/)[0];
@@ -290,8 +292,12 @@ function operator(pro) {
           usflag = usflag === "🇹🇼" ? "🇨🇳" : usflag;
         }
       }
+      // 内置保留词（从原始名提取，自动去重避免与 blkey/blgd 重复）
+      const retainKeyArr = Array.isArray(retainKey) ? retainKey : (retainKey ? [retainKey] : []);
+      const allOtherKeys = [...retainKeyArr, ikey, ikeys].filter(k => k !== "");
+      const builtinRetain = BUILTIN_RETAIN.filter(k => ens.includes(k) && !allOtherKeys.includes(k));
       keyover = keyover
-        .concat(firstName, usflag, nNames, findKeyValue, retainKey, ikey, ikeys)
+        .concat(firstName, usflag, nNames, findKeyValue, ...builtinRetain, retainKey, ikey, ikeys)
         .filter((k) => k !== "");
       e.name = keyover.join(FGF);
     } else {
